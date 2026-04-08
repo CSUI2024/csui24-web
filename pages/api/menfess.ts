@@ -150,11 +150,6 @@ export default async function handler(
             "Twitter API keys are not set or not in production mode"
           );
         }
-        if (status === "ERROR") {
-          throw new Error(
-            "LLM failed to moderate the content, so menfess will not be posted on Twitter"
-          );
-        }
         const twitterClient = new TwitterApi({
           appKey: process.env.X_API_KEY!,
           appSecret: process.env.X_API_KEY_SECRET!,
