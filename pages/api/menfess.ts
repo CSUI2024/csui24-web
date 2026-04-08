@@ -1,7 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient } from "@/lib/generated/prisma";
-import { TwitterApi } from "twitter-api-v2";
-import { briefFamsData } from "@/modules/fams-data";
 import { globalRateLimit } from "@/lib/rateLimiter";
 
 const limit = globalRateLimit(1);
@@ -136,7 +134,7 @@ export default async function handler(
     }
 
     try {
-      const newMenfess = await prisma.menfess.create({
+      await prisma.menfess.create({
         data: {
           to,
           from,
@@ -144,48 +142,9 @@ export default async function handler(
         },
       });
 
-      try {
-        if (!process.env.X_API_KEY || process.env.PRODUCTION === "false") {
-          throw new Error(
-            "Twitter API keys are not set or not in production mode"
-          );
-        }
-        const twitterClient = new TwitterApi({
-          appKey: process.env.X_API_KEY!,
-          appSecret: process.env.X_API_KEY_SECRET!,
-          accessToken: process.env.X_ACCESS_TOKEN!,
-          accessSecret: process.env.X_ACCESS_TOKEN_SECRET!,
-        });
-        const fromUser =
-          briefFamsData.find((fam) => fam.id === from.replace("fams/", ""))?.[
-            "full-name"
-          ] || "";
-        const toUser =
-          briefFamsData.find((fam) => fam.id === to.replace("fams/", ""))?.[
-            "full-name"
-          ] || "";
-        const FromMessage = fromUser ? fromUser + " CSUI24" : from;
-        const ToMessage = toUser ? toUser + " CSUI24" : to;
-        const tweet = await twitterClient.v2.tweet(
-          `From : ${FromMessage}\nTo : ${ToMessage}\n\n${message}`
-        );
-        console.log("Tweet sent successfully:", tweet);
-        await prisma.menfess.update({
-          where: { id: newMenfess.id },
-          data: {
-            isPosted: true,
-          },
-        });
-      } catch (e) {
-        console.log("Failed to send tweet", e);
-      }
-
       return res.status(200).json({
         success: true,
-        message:
-          status === "ERROR"
-            ? "Menfess sent successfully, but LLM failed to moderate the content"
-            : "Menfess sent successfully",
+        message: "Menfess sent successfully",
         data: null,
       });
     } catch {
