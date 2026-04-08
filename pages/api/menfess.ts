@@ -3,7 +3,6 @@ import { PrismaClient } from "@/lib/generated/prisma";
 import { TwitterApi } from "twitter-api-v2";
 import { briefFamsData } from "@/modules/fams-data";
 import { globalRateLimit } from "@/lib/rateLimiter";
-import { detectHate } from "@/lib/detectHate";
 
 const limit = globalRateLimit(1);
 const prisma = new PrismaClient();
